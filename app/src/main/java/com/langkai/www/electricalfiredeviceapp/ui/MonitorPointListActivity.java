@@ -1,11 +1,16 @@
 package com.langkai.www.electricalfiredeviceapp.ui;
 
 
+import android.content.ComponentName;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
+import com.langkai.www.electricalfiredeviceapp.MqttService;
 import com.langkai.www.electricalfiredeviceapp.R;
 import com.langkai.www.electricalfiredeviceapp.adapter.MonitorPointAdapter;
 import com.langkai.www.electricalfiredeviceapp.bean.MonitorPoint;
@@ -28,6 +33,20 @@ public class MonitorPointListActivity extends BaseActivity  {
 
     private RecyclerView recyclerView;
     private LinearLayoutManager manager;
+
+    private MqttService.MqttServiceBinder mBinder;
+    private ServiceConnection mqqtServiceConn = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            mBinder = (MqttService.MqttServiceBinder) service;
+            mBinder.connectIoTService();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            mBinder.disconnectIoTService();
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +83,21 @@ public class MonitorPointListActivity extends BaseActivity  {
 
         recyclerView.setAdapter(mAdapter);
 
+        initService();
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unbindService(mqqtServiceConn);
+    }
+
+    private void initService(){
+
+        Intent intent = new Intent(MonitorPointListActivity.this, MqttService.class);
+
+        bindService(intent, mqqtServiceConn, BIND_AUTO_CREATE);
     }
 
 }
