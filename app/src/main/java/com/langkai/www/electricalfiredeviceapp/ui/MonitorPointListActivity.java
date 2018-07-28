@@ -4,24 +4,31 @@ package com.langkai.www.electricalfiredeviceapp.ui;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.Handler;
 import android.os.IBinder;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 
-import com.langkai.www.electricalfiredeviceapp.MqttService;
+import com.google.gson.Gson;
+import com.jwenfeng.library.pulltorefresh.BaseRefreshListener;
+import com.jwenfeng.library.pulltorefresh.PullToRefreshLayout;
+import com.langkai.www.electricalfiredeviceapp.service.MqttService;
 import com.langkai.www.electricalfiredeviceapp.R;
 import com.langkai.www.electricalfiredeviceapp.adapter.MonitorPointAdapter;
 import com.langkai.www.electricalfiredeviceapp.bean.MonitorPoint;
+import com.langkai.www.electricalfiredeviceapp.bean.MonitorPointList;
+import com.langkai.www.electricalfiredeviceapp.service.MqttServiceCallback;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 
-public class MonitorPointListActivity extends BaseActivity  {
+public class MonitorPointListActivity extends BaseActivity implements MqttServiceCallback, BaseRefreshListener {
 
     private String TAG = MonitorPointListActivity.class.getSimpleName();
 
@@ -32,13 +39,15 @@ public class MonitorPointListActivity extends BaseActivity  {
     private MonitorPointAdapter mAdapter;
 
     private RecyclerView recyclerView;
+    private PullToRefreshLayout pullToRefreshLayout;
     private LinearLayoutManager manager;
 
-    private MqttService.MqttServiceBinder mBinder;
+    private MqttService.MqttServiceBinder mBinder = null;
     private ServiceConnection mqqtServiceConn = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             mBinder = (MqttService.MqttServiceBinder) service;
+            mBinder.setMqttServiceCallback(MonitorPointListActivity.this);
             mBinder.connectIoTService();
         }
 
@@ -53,26 +62,11 @@ public class MonitorPointListActivity extends BaseActivity  {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_monitor_point_list);
 
+        pullToRefreshLayout = findViewById(R.id.pull_fresh_layout);
+        pullToRefreshLayout.setRefreshListener(this);
+
         mDataList = new ArrayList<>();
-        mDataList.add("0001");
-        mDataList.add("0002");
-        mDataList.add("0003");
-        mDataList.add("0004");
-        mDataList.add("0005");
-        mDataList.add("0006");
-        mDataList.add("0007");
-        mDataList.add("0008");
-
-
         monitorPointMap = new HashMap<>();
-        monitorPointMap.put("0001" , new MonitorPoint("0001", "test1"));
-        monitorPointMap.put("0002" ,new MonitorPoint("0002", "test2"));
-        monitorPointMap.put("0003" ,new MonitorPoint("0003", "test3"));
-        monitorPointMap.put("0004" ,new MonitorPoint("0004", "test4"));
-        monitorPointMap.put("0005" ,new MonitorPoint("0005", "test5"));
-        monitorPointMap.put("0006" ,new MonitorPoint("0006", "test6"));
-        monitorPointMap.put("0007" ,new MonitorPoint("0007", "test7"));
-        monitorPointMap.put("0008" ,new MonitorPoint("0008", "test8"));
 
         mAdapter = new MonitorPointAdapter(this, mDataList, monitorPointMap);
 
@@ -84,6 +78,7 @@ public class MonitorPointListActivity extends BaseActivity  {
         recyclerView.setAdapter(mAdapter);
 
         initService();
+
     }
 
 
@@ -100,4 +95,46 @@ public class MonitorPointListActivity extends BaseActivity  {
         bindService(intent, mqqtServiceConn, BIND_AUTO_CREATE);
     }
 
+
+    @Override
+    public void monitorPointListUpdate(MonitorPointList list) {
+        List<String> idList = list.getDeviceIds();
+
+        for(int i = 0 ; i < idList.size(); i++){
+            String id = idList.get(i);
+
+            if(!mDataList.contains(id)){
+                mDataList.add(id);
+                monitorPointMap.put(id, new MonitorPoint(id, "未定义"));
+            }
+        }
+
+
+        mAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void refresh() {
+        if(mBinder != null){
+            mBinder.requestMpList();
+        }
+
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                pullToRefreshLayout.finishRefresh();
+            }
+        }, 2000);
+    }
+
+    @Override
+    public void loadMore() {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                pullToRefreshLayout.finishLoadMore();
+            }
+        }, 2000);
+
+    }
 }

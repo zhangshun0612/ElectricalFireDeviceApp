@@ -1,4 +1,4 @@
-package com.langkai.www.electricalfiredeviceapp;
+package com.langkai.www.electricalfiredeviceapp.service;
 
 import android.app.Service;
 import android.content.Intent;
@@ -6,6 +6,11 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+import com.langkai.www.electricalfiredeviceapp.bean.MonitorPoint;
+import com.langkai.www.electricalfiredeviceapp.bean.MonitorPointList;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
@@ -16,6 +21,8 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class MqttService extends Service {
@@ -28,7 +35,15 @@ public class MqttService extends Service {
     final String mpListTopic = "mpList";
     final String mpDataTopic = "mpData";
 
+    final String requestMpListTopic = "request_mpList";
+    final String requestMpDataTopic = "request_mpData";
+
+    final String requestMpListCmd = "CMD:request mpList";
+
+    private Gson gson = new Gson();
     private MqttAndroidClient mqttClient;
+
+    private List<MqttServiceCallback> mCallbacks = new ArrayList<>();
 
     public MqttService() {
 
@@ -86,6 +101,29 @@ public class MqttService extends Service {
 
         }
 
+        public void setMqttServiceCallback(MqttServiceCallback callback){
+            mCallbacks.add(callback);
+        }
+
+        public void requestMpList(){
+
+            if(mqttClient == null && !mqttClient.isConnected()){
+                //后续加上提醒
+                return;
+            }
+
+            MqttMessage message = new MqttMessage();
+            message.setQos(1);
+            message.setPayload(requestMpListCmd.getBytes());
+
+            try {
+                mqttClient.publish(requestMpListTopic, message);
+
+            } catch (MqttException e) {
+                e.printStackTrace();
+            }
+        }
+
     }
 
     private IMqttActionListener iMqttActionListener = new IMqttActionListener() {
@@ -117,10 +155,27 @@ public class MqttService extends Service {
         }
 
         @Override
-        public void messageArrived(String topic, MqttMessage message) throws Exception {
+        public void messageArrived(String topic, MqttMessage message) {
+            if(topic.equals(mpListTopic)){
+                try {
+                    String jsonStr = message.toString();
 
-            String threadId = Thread.currentThread().getName();
-            Log.d("MqttService", threadId);
+                    MonitorPointList mpList = gson.fromJson(jsonStr, MonitorPointList.class);
+
+                    if(!mCallbacks.isEmpty()){
+                        for(int i = 0 ; i < mCallbacks.size(); i++){
+                            mCallbacks.get(i).monitorPointListUpdate(mpList);
+                        }
+                    }
+
+                }catch (JsonSyntaxException exp){
+                    exp.printStackTrace();
+                }
+
+
+            }else if(topic.equals(mpDataTopic)){
+
+            }
 
         }
 

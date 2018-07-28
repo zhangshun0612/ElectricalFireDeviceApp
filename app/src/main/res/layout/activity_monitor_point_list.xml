@@ -6,9 +6,18 @@
     android:layout_height="match_parent"
     tools:context=".ui.MonitorPointListActivity">
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/recycle_view"
+    <com.jwenfeng.library.pulltorefresh.PullToRefreshLayout
+        android:id="@+id/pull_fresh_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recycle_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+    </com.jwenfeng.library.pulltorefresh.PullToRefreshLayout>
+
+
 
 </RelativeLayout>
