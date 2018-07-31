@@ -21,6 +21,7 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -174,6 +175,20 @@ public class MqttService extends Service {
 
 
             }else if(topic.equals(mpDataTopic)){
+
+                try {
+                    String jsonStr = message.toString();
+                    MonitorPoint mp = gson.fromJson(jsonStr, MonitorPoint.class);
+
+                    if(!mCallbacks.isEmpty()){
+                        for(int i = 0 ; i < mCallbacks.size(); i++){
+                            mCallbacks.get(i).monitorPointUpdate(mp);
+                        }
+                    }
+
+                }catch (JsonSyntaxException  e){
+                    e.printStackTrace();
+                }
 
             }
 
