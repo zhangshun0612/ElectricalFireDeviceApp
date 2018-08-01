@@ -43,6 +43,8 @@ public class MonitorPointAdapter extends RecyclerView.Adapter<MonitorPointAdapte
         return viewHolder;
     }
 
+
+
     @Override
     public void onBindViewHolder(ViewHolder holder, final int position) {
         String deviceId = mData.get(position);

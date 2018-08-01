@@ -17,12 +17,6 @@ import com.langkai.www.electricalfiredeviceapp.utils.Constant;
 
 public class MonitorPointActivity extends BaseActivity implements View.OnClickListener {
 
-    private static int FRAGMENT_DATA_SHOW = 1;
-    private static int FRAGMENT_SETTING_CONFIG = 2;
-    private static int FRAGMENT_DATA_RECORD = 3;
-
-    private int fragmentShowing;
-
     private String TAG = MonitorPointActivity.class.getSimpleName();
 
     private FragmentManager fragmentManager;
@@ -30,6 +24,10 @@ public class MonitorPointActivity extends BaseActivity implements View.OnClickLi
     private ImageButton dataShowButton;
     private ImageButton settingConfigButton;
     private ImageButton dataRecordButton;
+
+    private DataShowFragment dataShowFragment;
+    private SettingConfigFragment settingConfigFragment;
+    private DataRecordFragment dataRecordFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,11 +42,18 @@ public class MonitorPointActivity extends BaseActivity implements View.OnClickLi
             Log.d(TAG , "CH_DEF: " + ch.getChannelDefine());
         }
 
+
+        dataShowFragment = new DataShowFragment();
+        settingConfigFragment = new SettingConfigFragment();
+        dataRecordFragment = new DataRecordFragment();
+
+        dataShowFragment.setMonitorPoint(mp);
+
         fragmentManager = getFragmentManager();
         fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.add(R.id.frame_layout, new DataShowFragment());
+        fragmentTransaction.add(R.id.frame_layout, dataShowFragment);
         fragmentTransaction.commit();
-        fragmentShowing = FRAGMENT_DATA_SHOW;
+
 
         dataShowButton = findViewById(R.id.data_show_button);
         dataRecordButton = findViewById(R.id.data_record_button);
@@ -70,18 +75,16 @@ public class MonitorPointActivity extends BaseActivity implements View.OnClickLi
         fragmentTransaction = fragmentManager.beginTransaction();
         switch (view.getId()){
             case R.id.data_show_button:
-                if(fragmentShowing != FRAGMENT_DATA_SHOW) {
-                    fragmentTransaction.replace(R.id.frame_layout, new DataShowFragment());
+                if(!dataShowFragment.isVisible()) {
+                    fragmentTransaction.replace(R.id.frame_layout, dataShowFragment);
                     dataShowButton.setImageDrawable(getResources().getDrawable(R.mipmap.ic_fragment_data_show_chosen));
                     settingConfigButton.setImageDrawable(getResources().getDrawable(R.mipmap.ic_fragment_setting_config_notchosen));
                     dataRecordButton.setImageDrawable(getResources().getDrawable(R.mipmap.ic_fragment_data_record_notchosen));
-                    fragmentShowing = FRAGMENT_DATA_SHOW;
                 }
                 break;
             case R.id.setting_config_button:
-                if(fragmentShowing != FRAGMENT_SETTING_CONFIG){
-                    fragmentShowing = FRAGMENT_SETTING_CONFIG;
-                    fragmentTransaction.replace(R.id.frame_layout, new SettingConfigFragment());
+                if(!settingConfigFragment.isVisible()){
+                    fragmentTransaction.replace(R.id.frame_layout, settingConfigFragment);
                     dataShowButton.setImageDrawable(getResources().getDrawable(R.mipmap.ic_fragment_data_show_notchosen));
                     settingConfigButton.setImageDrawable(getResources().getDrawable(R.mipmap.ic_fragment_setting_config_chosen));
                     dataRecordButton.setImageDrawable(getResources().getDrawable(R.mipmap.ic_fragment_data_record_notchosen));
@@ -89,9 +92,8 @@ public class MonitorPointActivity extends BaseActivity implements View.OnClickLi
 
                 break;
             case R.id.data_record_button:
-                if(fragmentShowing != FRAGMENT_DATA_RECORD){
-                    fragmentShowing = FRAGMENT_DATA_RECORD;
-                    fragmentTransaction.replace(R.id.frame_layout, new DataRecordFragment());
+                if(!dataRecordFragment.isVisible()){
+                    fragmentTransaction.replace(R.id.frame_layout, dataRecordFragment);
                     dataShowButton.setImageDrawable(getResources().getDrawable(R.mipmap.ic_fragment_data_show_notchosen));
                     settingConfigButton.setImageDrawable(getResources().getDrawable(R.mipmap.ic_fragment_setting_config_notchosen));
                     dataRecordButton.setImageDrawable(getResources().getDrawable(R.mipmap.ic_fragment_data_record_chosen));
