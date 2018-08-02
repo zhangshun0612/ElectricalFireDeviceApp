@@ -3,19 +3,24 @@ package com.langkai.www.electricalfiredeviceapp.adapter;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
+import android.util.SparseArray;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.langkai.www.electricalfiredeviceapp.R;
 import com.langkai.www.electricalfiredeviceapp.bean.MonitorPointChannel;
+import com.langkai.www.electricalfiredeviceapp.utils.Constant;
 
-import java.util.List;
+public class MonitorPointChannelAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-public class MonitorPointChannelAdapter extends RecyclerView.Adapter<MonitorPointChannelAdapter.ViewHolder> {
+    private final static String TAG = MonitorPointChannelAdapter.class.getSimpleName();
 
     private Context mContext;
-    private List<MonitorPointChannel> mData;
+    private SparseArray<MonitorPointChannel> mData = null;
 
-    public MonitorPointChannelAdapter(Context context, List<MonitorPointChannel> data)
+    public MonitorPointChannelAdapter(Context context, SparseArray<MonitorPointChannel> data)
     {
         mContext = context;
         mData = data;
@@ -23,31 +28,48 @@ public class MonitorPointChannelAdapter extends RecyclerView.Adapter<MonitorPoin
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return null;
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+
+        View view = LayoutInflater.from(mContext).inflate(R.layout.monitor_point_channel_value_item, parent, false);
+        ChannelValueViewHolder viewHolder = new ChannelValueViewHolder(view);
+
+        return viewHolder;
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        ChannelValueViewHolder viewHolder = (ChannelValueViewHolder) holder;
+
 
     }
 
     @Override
     public int getItemViewType(int position) {
-        MonitorPointChannel ch = mData.get(position);
-
+        int key = mData.keyAt(position);
+        MonitorPointChannel ch = mData.get(key);
+        if(ch == null){
+            return Constant.FUNCTION_UNDEFINED;
+        }
         return ch.getChannelDefine();
     }
 
     @Override
     public int getItemCount() {
-        return 0;
+        if(mData == null)
+            return 0;
+        else
+            return mData.size();
+
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
 
-        public ViewHolder(View itemView) {
+    public class ChannelValueViewHolder extends RecyclerView.ViewHolder {
+
+        public ChannelValueViewHolder(View itemView) {
             super(itemView);
         }
     }
+
+
+
 }

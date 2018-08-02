@@ -4,15 +4,19 @@ package com.langkai.www.electricalfiredeviceapp.bean;
 import android.annotation.SuppressLint;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.SparseArray;
 
 import com.google.gson.annotations.SerializedName;
 import com.langkai.www.electricalfiredeviceapp.utils.Constant;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class MonitorPoint implements Serializable {
     @SerializedName("id")
@@ -92,5 +96,21 @@ public class MonitorPoint implements Serializable {
         return status;
     }
 
+
+    public SparseArray<MonitorPointChannel> getMonitorPointChannels(){
+
+        SparseArray<MonitorPointChannel> array = new SparseArray<>();
+        Set<Integer> keys = channels.keySet();
+
+        Iterator<Integer> iter = keys.iterator();
+        while(iter.hasNext()){
+            int chnum = iter.next();
+            MonitorPointChannel ch = channels.get(chnum);
+
+            array.append(chnum, ch);
+        }
+
+        return array;
+    }
 
 }

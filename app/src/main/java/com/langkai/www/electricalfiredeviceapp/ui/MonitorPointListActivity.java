@@ -22,6 +22,7 @@ import com.langkai.www.electricalfiredeviceapp.adapter.MonitorPointAdapter;
 import com.langkai.www.electricalfiredeviceapp.bean.MonitorPoint;
 import com.langkai.www.electricalfiredeviceapp.bean.MonitorPointList;
 import com.langkai.www.electricalfiredeviceapp.service.MqttServiceCallback;
+import com.langkai.www.electricalfiredeviceapp.utils.Constant;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -122,10 +123,15 @@ public class MonitorPointListActivity extends BaseActivity implements MqttServic
             mDataList.add(id);
 
             MonitorPoint mp = new MonitorPoint(id, "未定义");
-
-            for(int ch = 1; ch <= 4; ch++){
+            mp.addMonitorPointChannel(1, new MonitorPointChannel(1, Constant.FUNCTION_RESIDUAL_CURRENT));
+            mp.addMonitorPointChannel(2, new MonitorPointChannel(2, Constant.FUNCTION_RUNNING_CURRENT));
+            mp.addMonitorPointChannel(3, new MonitorPointChannel(3, Constant.FUNCTION_RUNNING_VOLT));
+            mp.addMonitorPointChannel(4, new MonitorPointChannel(4, Constant.FUNCTION_TEMPERATURE));
+            /*
+            for(int ch = 2; ch <= 3; ch++){
                 mp.addMonitorPointChannel(ch, new MonitorPointChannel(ch));
             }
+            */
             monitorPointMap.put(id, mp);
         }
 

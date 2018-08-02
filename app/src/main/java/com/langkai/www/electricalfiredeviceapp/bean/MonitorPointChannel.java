@@ -92,4 +92,9 @@ public class MonitorPointChannel implements Serializable{
         channelDefine = Constant.FUNCTION_UNDEFINED;
     }
 
+    public MonitorPointChannel(int chnum, int chDef){
+        channelNumber = chnum;
+        channelDefine = chDef;
+    }
+
 }
