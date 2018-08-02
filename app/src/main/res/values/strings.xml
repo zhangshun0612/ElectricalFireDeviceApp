@@ -4,6 +4,32 @@
     <string name="username_hint">输入用户名</string>
     <string name="password_hint">输入密码</string>
     <string name="login_button_text">登录</string>
+    <string name="status_created">创建</string>
+
+    <string name="status_ok">正常</string>
+    <string name="status_alarm">报警</string>
+    <string name="status_fault">故障</string>
+    <string name="status_disconnected">断线</string>
+
+    <string name="function_undefined">未定义</string>
+    <string name="function_residual_current">剩余电流监测</string>
+    <string name="function_temperature">温度监测</string>
+    <string name="function_running_current">运行电流监测</string>
+    <string name="function_running_volt">运行电压监测</string>
+    <string name="function_switch_output">继电器输出</string>
+    <string name="function_switch_input">继电器输入</string>
+    <string name="function_disabled">禁用</string>
+
+    <string name="fault_short">短路故障</string>
+    <string name="fault_break">断路故障</string>
+    <string name="fault_earth">接地故障</string>
+    <string name="fault_sensor">传感器故障</string>
+
+    <string name="alarm_upper_limit">上限报警</string>
+    <string name="alarm_lower_limit">下限报警</string>
+    <string name="alarm_phase_missing">缺相报警</string>
+    <string name="alarm_phase_fault">错相报警</string>
+
     <string name="title_activity_monitor_point_list">MonitorPointListActivity</string>
 
     <!-- TODO: Remove or change this placeholder text -->

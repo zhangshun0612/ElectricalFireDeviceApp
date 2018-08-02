@@ -4,10 +4,12 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.google.gson.annotations.SerializedName;
+import com.langkai.www.electricalfiredeviceapp.R;
 import com.langkai.www.electricalfiredeviceapp.utils.Constant;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Locale;
 
 public class MonitorPointChannel implements Serializable{
     public int getChannelNumber() {
@@ -50,12 +52,32 @@ public class MonitorPointChannel implements Serializable{
         this.channelFaultType = channelFaultType;
     }
 
-    public float getValue() {
+    public double getValue() {
         return value;
     }
 
-    public void setValue(float value) {
+    public void setValue(double value) {
         this.value = value;
+    }
+
+    public String getValueString(){
+        String valueStr = "";
+        switch (channelDefine){
+            case Constant.FUNCTION_RESIDUAL_CURRENT:
+                valueStr = String.format(Locale.CHINESE, "%.2f A", value);
+                break;
+            case Constant.FUNCTION_TEMPERATURE:
+                valueStr = String.format(Locale.CHINESE, "%d ℃", (int)value);
+                break;
+            case Constant.FUNCTION_RUNNING_CURRENT:
+                valueStr = String.format(Locale.CHINESE, "%.2f A", value);
+                break;
+            case Constant.FUNCTION_RUNNING_VOLT:
+                valueStr = String.format(Locale.CHINESE, "%.2f V", value);
+                break;
+        }
+
+        return valueStr;
     }
 
     public Date getLatestUpdateTime() {
@@ -82,7 +104,7 @@ public class MonitorPointChannel implements Serializable{
     private int channelFaultType;
 
     @SerializedName("v")
-    private float value;
+    private double value;
 
     @SerializedName("t")
     private Date latestUpdateTime;

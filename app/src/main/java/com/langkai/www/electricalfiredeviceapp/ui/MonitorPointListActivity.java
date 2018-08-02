@@ -2,6 +2,7 @@ package com.langkai.www.electricalfiredeviceapp.ui;
 
 
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Handler;
@@ -123,10 +124,29 @@ public class MonitorPointListActivity extends BaseActivity implements MqttServic
             mDataList.add(id);
 
             MonitorPoint mp = new MonitorPoint(id, "未定义");
-            mp.addMonitorPointChannel(1, new MonitorPointChannel(1, Constant.FUNCTION_RESIDUAL_CURRENT));
-            mp.addMonitorPointChannel(2, new MonitorPointChannel(2, Constant.FUNCTION_RUNNING_CURRENT));
-            mp.addMonitorPointChannel(3, new MonitorPointChannel(3, Constant.FUNCTION_RUNNING_VOLT));
-            mp.addMonitorPointChannel(4, new MonitorPointChannel(4, Constant.FUNCTION_TEMPERATURE));
+            MonitorPointChannel ch1 = new MonitorPointChannel(1, Constant.FUNCTION_RESIDUAL_CURRENT);
+            ch1.setChannelStatus(Constant.STATUS_OK);
+            ch1.setValue(30.22);
+            mp.addMonitorPointChannel(1, ch1);
+
+            MonitorPointChannel ch2 = new MonitorPointChannel(1, Constant.FUNCTION_TEMPERATURE);
+            ch2.setChannelStatus(Constant.STATUS_FAULT);
+            ch2.setChannelFaultType(Constant.FAULT_BREAK);
+            mp.addMonitorPointChannel(2, ch2);
+
+
+            MonitorPointChannel ch3 = new MonitorPointChannel(1, Constant.FUNCTION_RUNNING_CURRENT);
+            ch3.setChannelStatus(Constant.STATUS_ALARM);
+            ch3.setChannelAlarmType(Constant.ALARM_UPPER_LIMIT);
+            ch3.setValue(20);
+            mp.addMonitorPointChannel(3, ch3);
+
+
+            MonitorPointChannel ch4 = new MonitorPointChannel(1, Constant.FUNCTION_RUNNING_VOLT);
+            ch4.setChannelStatus(Constant.STATUS_DISCONNECTED);
+            mp.addMonitorPointChannel(4, ch4);
+
+
             /*
             for(int ch = 2; ch <= 3; ch++){
                 mp.addMonitorPointChannel(ch, new MonitorPointChannel(ch));

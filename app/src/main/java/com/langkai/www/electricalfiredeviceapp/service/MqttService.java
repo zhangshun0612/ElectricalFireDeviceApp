@@ -106,6 +106,10 @@ public class MqttService extends Service {
             mCallbacks.add(callback);
         }
 
+        public void removeMqttServiceCallback(MqttServiceCallback callback){
+            mCallbacks.remove(callback);
+        }
+
         public void requestMpList(){
 
             if(mqttClient == null && !mqttClient.isConnected()){

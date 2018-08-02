@@ -45,6 +45,16 @@ public class DataShowFragment extends Fragment {
         channelList = mp.getMonitorPointChannels();
     }
 
+    public void updateMonitorPoint(MonitorPoint mp){
+        monitorPoint = mp;
+        channelList = mp.getMonitorPointChannels();
+
+        if(mAdapter != null){
+            mAdapter.updateData(channelList);
+            mAdapter.notifyDataSetChanged();
+        }
+    }
+
     private void updateView(){
         idTextView.setText(monitorPoint.getDeviceId());
         nameTextView.setText(monitorPoint.getMonitorPointName());

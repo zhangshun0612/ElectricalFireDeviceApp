@@ -2,7 +2,11 @@ package com.langkai.www.electricalfiredeviceapp.ui;
 
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.ComponentName;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
@@ -10,12 +14,15 @@ import android.widget.ImageButton;
 import com.langkai.www.electricalfiredeviceapp.R;
 import com.langkai.www.electricalfiredeviceapp.bean.MonitorPoint;
 import com.langkai.www.electricalfiredeviceapp.bean.MonitorPointChannel;
+import com.langkai.www.electricalfiredeviceapp.bean.MonitorPointList;
+import com.langkai.www.electricalfiredeviceapp.service.MqttService;
+import com.langkai.www.electricalfiredeviceapp.service.MqttServiceCallback;
 import com.langkai.www.electricalfiredeviceapp.ui.fragment.DataRecordFragment;
 import com.langkai.www.electricalfiredeviceapp.ui.fragment.DataShowFragment;
 import com.langkai.www.electricalfiredeviceapp.ui.fragment.SettingConfigFragment;
 import com.langkai.www.electricalfiredeviceapp.utils.Constant;
 
-public class MonitorPointActivity extends BaseActivity implements View.OnClickListener {
+public class MonitorPointActivity extends BaseActivity implements View.OnClickListener, MqttServiceCallback {
 
     private String TAG = MonitorPointActivity.class.getSimpleName();
 
@@ -29,25 +36,38 @@ public class MonitorPointActivity extends BaseActivity implements View.OnClickLi
     private SettingConfigFragment settingConfigFragment;
     private DataRecordFragment dataRecordFragment;
 
+
+    private MonitorPoint monitorPoint;
+
+    private MqttService.MqttServiceBinder mBinder = null;
+
+    private ServiceConnection mqttServiceConn = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            mBinder = (MqttService.MqttServiceBinder) service;
+            mBinder.setMqttServiceCallback(MonitorPointActivity.this);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_monitor_point);
 
         Bundle bundle = getIntent().getBundleExtra("data");
-        MonitorPoint mp = (MonitorPoint) bundle.getSerializable("mp");
-
-        MonitorPointChannel ch = mp.getMonitorPointChannel(1);
-        if(ch != null){
-            Log.d(TAG , "CH_DEF: " + ch.getChannelDefine());
-        }
+        monitorPoint = (MonitorPoint) bundle.getSerializable("mp");
 
 
         dataShowFragment = new DataShowFragment();
         settingConfigFragment = new SettingConfigFragment();
         dataRecordFragment = new DataRecordFragment();
 
-        dataShowFragment.setMonitorPoint(mp);
+        dataShowFragment.setMonitorPoint(monitorPoint);
 
         fragmentManager = getFragmentManager();
         fragmentTransaction = fragmentManager.beginTransaction();
@@ -62,12 +82,19 @@ public class MonitorPointActivity extends BaseActivity implements View.OnClickLi
         dataShowButton.setOnClickListener(this);
         dataRecordButton.setOnClickListener(this);
         settingConfigButton.setOnClickListener(this);
+
+        initService();
     }
 
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+    }
+
+    private void initService(){
+        Intent intent = new Intent(MonitorPointActivity.this, MqttService.class);
+        bindService(intent, mqttServiceConn, BIND_AUTO_CREATE);
     }
 
     @Override
@@ -103,5 +130,18 @@ public class MonitorPointActivity extends BaseActivity implements View.OnClickLi
         }
 
         fragmentTransaction.commit();
+    }
+
+    @Override
+    public void monitorPointListUpdate(MonitorPointList list) {
+
+    }
+
+    @Override
+    public void monitorPointUpdate(MonitorPoint mp) {
+        if(!mp.getDeviceId().equals(monitorPoint.getDeviceId()))
+            return;
+
+        dataShowFragment.updateMonitorPoint(mp);
     }
 }
