@@ -2,7 +2,6 @@ package com.langkai.www.electricalfiredeviceapp.ui;
 
 
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Handler;
@@ -11,7 +10,6 @@ import android.os.Bundle;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.jwenfeng.library.pulltorefresh.BaseRefreshListener;
@@ -86,7 +84,7 @@ public class MonitorPointListActivity extends BaseActivity implements MqttServic
 
         initService();
 
-        initData();
+        //initData();
     }
 
     @Override
@@ -161,14 +159,15 @@ public class MonitorPointListActivity extends BaseActivity implements MqttServic
 
     @Override
     public void monitorPointListUpdate(MonitorPointList list) {
-        List<String> idList = list.getDeviceIds();
+        List<MonitorPointList.MonitorPointInfo> infoList = list.getDeviceInfos();
 
-        for(int i = 0 ; i < idList.size(); i++){
-            String id = idList.get(i);
+        for(int i = 0 ; i < infoList.size(); i++){
+            MonitorPointList.MonitorPointInfo info = infoList.get(i);
 
-            if(!mDataList.contains(id)){
+            if(!mDataList.contains(info.getId())){
+                String id = info.getId();
                 mDataList.add(id);
-                monitorPointMap.put(id, new MonitorPoint(id, "未定义"));
+                monitorPointMap.put(id, new MonitorPoint(id, info.getName(), info.getStatus()));
             }
         }
 

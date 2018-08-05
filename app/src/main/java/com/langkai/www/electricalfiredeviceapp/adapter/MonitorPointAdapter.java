@@ -16,6 +16,8 @@ import android.widget.TextView;
 
 import com.langkai.www.electricalfiredeviceapp.R;
 import com.langkai.www.electricalfiredeviceapp.bean.MonitorPoint;
+import com.langkai.www.electricalfiredeviceapp.bean.MonitorPointChannel;
+import com.langkai.www.electricalfiredeviceapp.bean.MonitorPointList;
 import com.langkai.www.electricalfiredeviceapp.ui.MonitorPointActivity;
 import com.langkai.www.electricalfiredeviceapp.utils.Constant;
 

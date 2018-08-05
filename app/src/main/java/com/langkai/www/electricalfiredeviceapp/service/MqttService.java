@@ -39,20 +39,42 @@ public class MqttService extends Service {
     final String requestMpListTopic = "request_mpList";
     final String requestMpDataTopic = "request_mpData";
 
-    final String requestMpListCmd = "CMD:request mpList";
+    final String requestMpListCmd = "GET:request_mpList";
+    final String requestMpDataCmd = "GET:request_mpData"; //with args
+
 
     private Gson gson = new Gson();
     private MqttAndroidClient mqttClient;
-
     private List<MqttServiceCallback> mCallbacks = new ArrayList<>();
+
+    private MqttServiceBinder binder = null;
 
     public MqttService() {
 
     }
 
     @Override
+    public void onDestroy() {
+        super.onDestroy();
+        /*
+        if(mqttClient.isConnected()){
+            try {
+                mqttClient.disconnect();
+            } catch (MqttException e) {
+                e.printStackTrace();
+            }
+        }
+        */
+        mqttClient.unregisterResources();
+        mqttClient.close();
+    }
+
+    @Override
     public IBinder onBind(Intent intent) {
-        MqttServiceBinder binder = new MqttServiceBinder();
+        if(binder == null){
+            binder = new MqttServiceBinder();
+        }
+
         return binder;
     }
 
@@ -61,31 +83,31 @@ public class MqttService extends Service {
 
         public void connectIoTService(){
 
+            /*
             new Thread(new Runnable() {
                 @Override
                 public void run() {
 
-                    String threadId = Thread.currentThread().getName();
-                    Log.d("MqttService", threadId);
 
-                    MqttConnectOptions connOpt = new MqttConnectOptions();
-                    connOpt.setUserName(userName);
-                    connOpt.setPassword(password.toCharArray());
-                    connOpt.setCleanSession(true);
-                    connOpt.setConnectionTimeout(10);
-                    connOpt.setKeepAliveInterval(20);
-
-                    mqttClient = new MqttAndroidClient(MqttService.this, brokerUrl, clientId);
-                    mqttClient.setCallback(mqttCallback);
-
-                    try {
-                        mqttClient.connect(connOpt, null, iMqttActionListener);
-                    } catch (MqttException e) {
-                        e.printStackTrace();
-                    }
-
-                }
             }).start();
+            */
+
+
+            MqttConnectOptions connOpt = new MqttConnectOptions();
+            connOpt.setUserName(userName);
+            connOpt.setPassword(password.toCharArray());
+            connOpt.setCleanSession(true);
+            connOpt.setConnectionTimeout(10);
+            connOpt.setKeepAliveInterval(20);
+
+            mqttClient = new MqttAndroidClient(MqttService.this, brokerUrl, clientId);
+            mqttClient.setCallback(mqttCallback);
+
+            try {
+                mqttClient.connect(connOpt, null, iMqttActionListener);
+            } catch (MqttException e) {
+                e.printStackTrace();
+            }
 
         }
 
@@ -129,6 +151,25 @@ public class MqttService extends Service {
             }
         }
 
+        public void requestMpData(String deviceId){
+            if(mqttClient == null && !mqttClient.isConnected()){
+                //后续加上提醒
+                return;
+            }
+
+            String messageStr = requestMpDataCmd + " " + deviceId;
+
+            MqttMessage message = new MqttMessage();
+            message.setQos(1);
+            message.setPayload(messageStr.getBytes());
+
+            try {
+                mqttClient.publish(requestMpDataTopic, message);
+
+            } catch (MqttException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private IMqttActionListener iMqttActionListener = new IMqttActionListener() {

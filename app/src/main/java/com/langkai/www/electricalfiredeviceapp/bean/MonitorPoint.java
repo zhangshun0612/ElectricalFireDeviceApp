@@ -27,6 +27,8 @@ public class MonitorPoint implements Serializable {
     @SerializedName("chs")
     private Map<Integer, MonitorPointChannel> channels = null;
 
+    @SerializedName("st")
+    private int status;
 
     public String getDeviceId() {
         return deviceId;
@@ -47,12 +49,20 @@ public class MonitorPoint implements Serializable {
 
     public MonitorPoint(){
         this.monitorPointName = "未定义";
+        this.status = Constant.STATUS_OK;
     }
 
     public MonitorPoint(String deviceId, String name){
 
         this.deviceId = deviceId;
         this.monitorPointName = name;
+        this.status = Constant.STATUS_OK;
+    }
+
+    public MonitorPoint(String deviceId, String name, int status){
+        this.deviceId = deviceId;
+        this.monitorPointName = name;
+        this.status = status;
     }
 
     @SuppressLint("UseSparseArrays")
@@ -74,32 +84,36 @@ public class MonitorPoint implements Serializable {
 
     public int getMonitorPointStatus(){
         if(channels == null){
-            return Constant.STATUS_OK;
+            return status;
         }
 
         Collection<MonitorPointChannel> chList = channels.values();
 
-        int status = Constant.STATUS_OK;
+        int curStatus = Constant.STATUS_OK;
         Iterator<MonitorPointChannel> iter = chList.iterator();
         while(iter.hasNext()){
             MonitorPointChannel ch = iter.next();
             if(ch.getChannelStatus() == Constant.STATUS_ALARM){
-                status = Constant.STATUS_ALARM;
+                curStatus = Constant.STATUS_ALARM;
                 break;
             }else if(ch.getChannelStatus() == Constant.STATUS_FAULT){
-                status = Constant.STATUS_FAULT;
+                curStatus = Constant.STATUS_FAULT;
             }else if(ch.getChannelStatus() == Constant.STATUS_DISCONNECTED){
-                status = Constant.STATUS_DISCONNECTED;
+                curStatus = Constant.STATUS_DISCONNECTED;
             }
         }
-
-        return status;
+        status = curStatus;
+        return curStatus;
     }
 
 
     public SparseArray<MonitorPointChannel> getMonitorPointChannels(){
 
         SparseArray<MonitorPointChannel> array = new SparseArray<>();
+
+        if(channels == null)
+            return array;
+
         Set<Integer> keys = channels.keySet();
 
         Iterator<Integer> iter = keys.iterator();

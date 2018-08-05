@@ -46,6 +46,8 @@ public class MonitorPointActivity extends BaseActivity implements View.OnClickLi
         public void onServiceConnected(ComponentName name, IBinder service) {
             mBinder = (MqttService.MqttServiceBinder) service;
             mBinder.setMqttServiceCallback(MonitorPointActivity.this);
+
+            mBinder.requestMpData(monitorPoint.getDeviceId());
         }
 
         @Override
@@ -90,6 +92,7 @@ public class MonitorPointActivity extends BaseActivity implements View.OnClickLi
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        unbindService(mqttServiceConn);
     }
 
     private void initService(){

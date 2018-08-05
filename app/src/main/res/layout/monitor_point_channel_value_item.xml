@@ -41,12 +41,14 @@
             <TextView
                 android:id="@+id/description_text_view"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:textStyle="bold"/>
 
             <TextView
                 android:id="@+id/value_text_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textStyle="bold"
                 android:layout_marginStart="10dp"/>
 
 
