@@ -1,12 +1,19 @@
 package com.langkai.www.electricalfiredeviceapp.ui;
 
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Bundle;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -182,11 +189,20 @@ public class MonitorPointListActivity extends BaseActivity implements MqttServic
 
         String id = mp.getDeviceId();
 
-        if(monitorPointMap.containsKey(id)){
-            //monitorPointMap.replace(id, mp);
-            monitorPointMap.remove(id);
-            monitorPointMap.put(id, mp);
+        if(!monitorPointMap.containsKey(id))
+            return;
+
+        MonitorPoint preMp = monitorPointMap.get(id);
+        if(preMp.getMonitorPointStatus() == Constant.STATUS_OK
+                && mp.getMonitorPointStatus() == Constant.STATUS_ALARM)
+        {
+            //报警提示
+            setupAlarmNotification(mp);
         }
+
+        monitorPointMap.remove(id);
+        monitorPointMap.put(id, mp);
+
 
         if(isShown){
             mAdapter.notifyDataSetChanged();
@@ -224,6 +240,34 @@ public class MonitorPointListActivity extends BaseActivity implements MqttServic
                 pullToRefreshLayout.finishLoadMore();
             }
         }, 2000);
+
+    }
+
+    private void setupAlarmNotification(MonitorPoint mp){
+
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(),R.mipmap.ic_mp_alarm);
+
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("mp", mp);
+
+        Intent intent = new Intent(MonitorPointListActivity.this, MonitorPointActivity.class);
+        intent.putExtra("data", bundle);
+
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
+                intent, PendingIntent.FLAG_CANCEL_CURRENT);
+
+        Notification notification = new NotificationCompat.Builder(this, "alarm")
+                .setSmallIcon(R.mipmap.ic_mp_alarm)
+                .setLargeIcon(bitmap)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true)
+                .setStyle(new NotificationCompat.InboxStyle()
+                .addLine(mp.getDeviceId() + "报警")
+                .setBigContentTitle("设备报警"))
+                .build();
+
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.notify(0, notification);
 
     }
 }
