@@ -19,6 +19,7 @@ import com.langkai.www.electricalfiredeviceapp.bean.MonitorPoint;
 import com.langkai.www.electricalfiredeviceapp.bean.MonitorPointChannel;
 import com.langkai.www.electricalfiredeviceapp.bean.MonitorPointList;
 import com.langkai.www.electricalfiredeviceapp.ui.MonitorPointActivity;
+import com.langkai.www.electricalfiredeviceapp.ui.MonitorPointListActivity;
 import com.langkai.www.electricalfiredeviceapp.utils.Constant;
 
 import java.util.HashMap;
@@ -118,12 +119,15 @@ public class MonitorPointAdapter extends RecyclerView.Adapter<MonitorPointAdapte
                     String id = mData.get(position);
                     MonitorPoint mp = mMap.get(id);
 
+
                     Bundle bundle = new Bundle();
                     bundle.putSerializable("mp", mp);
 
                     Intent intent = new Intent(context, MonitorPointActivity.class);
                     intent.putExtra("data", bundle);
                     context.startActivity(intent);
+
+
                 }
             });
         }

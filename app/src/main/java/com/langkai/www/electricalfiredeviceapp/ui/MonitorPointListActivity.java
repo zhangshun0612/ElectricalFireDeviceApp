@@ -30,6 +30,7 @@ import com.langkai.www.electricalfiredeviceapp.bean.MonitorPointList;
 import com.langkai.www.electricalfiredeviceapp.service.MqttServiceCallback;
 import com.langkai.www.electricalfiredeviceapp.utils.Constant;
 
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -52,6 +53,8 @@ public class MonitorPointListActivity extends BaseActivity implements MqttServic
     private RecyclerView recyclerView;
     private PullToRefreshLayout pullToRefreshLayout;
     private LinearLayoutManager manager;
+
+    NotificationManager notificationManager = null;
 
     private MqttService.MqttServiceBinder mBinder = null;
     private ServiceConnection mqttServiceConn = new ServiceConnection() {
@@ -89,9 +92,11 @@ public class MonitorPointListActivity extends BaseActivity implements MqttServic
         recyclerView.setAdapter(mAdapter);
         recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
 
+        notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
         initService();
 
-        //initData();
+        initData();
     }
 
     @Override
@@ -114,6 +119,7 @@ public class MonitorPointListActivity extends BaseActivity implements MqttServic
     protected void onDestroy() {
         super.onDestroy();
         unbindService(mqttServiceConn);
+        notificationManager.cancelAll();
     }
 
     private void initService(){
@@ -212,6 +218,7 @@ public class MonitorPointListActivity extends BaseActivity implements MqttServic
 
     @Override
     public void refresh() {
+        /*
         isRefreshing = true;
 
         if(mBinder != null){
@@ -227,7 +234,15 @@ public class MonitorPointListActivity extends BaseActivity implements MqttServic
                 }
             }
         }, 4000);
+       */
 
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                setupAlarmNotification(monitorPointMap.get(mDataList.get(0)));
+                pullToRefreshLayout.finishRefresh();
+            }
+        }, 500);
     }
 
     @Override
@@ -261,12 +276,16 @@ public class MonitorPointListActivity extends BaseActivity implements MqttServic
                 .setLargeIcon(bitmap)
                 .setContentIntent(pendingIntent)
                 .setAutoCancel(true)
-                .setStyle(new NotificationCompat.InboxStyle()
-                .addLine(mp.getDeviceId() + "报警")
+                /*
+                .setStyle(
+                        new NotificationCompat.InboxStyle()
+                                .addLine(mp.getDeviceId() + "报警")
                 .setBigContentTitle("设备报警"))
+                */
+                .setContentTitle("设备报警")
+                .setDefaults(Notification.DEFAULT_SOUND)
                 .build();
 
-        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.notify(0, notification);
 
     }
