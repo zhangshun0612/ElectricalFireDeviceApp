@@ -1,6 +1,7 @@
 package com.langkai.www.electricalfiredeviceapp.ui;
 
 
+import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -17,6 +18,7 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.KeyEvent;
 import android.widget.Toast;
 
 import com.jwenfeng.library.pulltorefresh.BaseRefreshListener;
@@ -36,9 +38,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 
-public class MonitorPointListActivity extends BaseActivity implements MqttServiceCallback, BaseRefreshListener {
+public class MonitorPointListActivity extends MqttServiceActivity implements BaseRefreshListener {
 
     private String TAG = MonitorPointListActivity.class.getSimpleName();
 
@@ -47,6 +51,7 @@ public class MonitorPointListActivity extends BaseActivity implements MqttServic
 
     private boolean isRefreshing = false;
     private boolean isShown = false;
+    private boolean isBackKeyPressed = false;
 
     private MonitorPointAdapter mAdapter = null;
 
@@ -56,20 +61,6 @@ public class MonitorPointListActivity extends BaseActivity implements MqttServic
 
     NotificationManager notificationManager = null;
 
-    private MqttService.MqttServiceBinder mBinder = null;
-    private ServiceConnection mqttServiceConn = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            mBinder = (MqttService.MqttServiceBinder) service;
-            mBinder.setMqttServiceCallback(MonitorPointListActivity.this);
-            mBinder.connectIoTService();
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            mBinder.disconnectIoTService();
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,9 +85,7 @@ public class MonitorPointListActivity extends BaseActivity implements MqttServic
 
         notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        initService();
-
-        initData();
+        //initData();
     }
 
     @Override
@@ -118,16 +107,9 @@ public class MonitorPointListActivity extends BaseActivity implements MqttServic
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unbindService(mqttServiceConn);
         notificationManager.cancelAll();
     }
 
-    private void initService(){
-
-        Intent intent = new Intent(MonitorPointListActivity.this, MqttService.class);
-
-        bindService(intent, mqttServiceConn, BIND_AUTO_CREATE);
-    }
 
     private void initData(){
         for(int i = 1 ; i < 50; i++){
@@ -169,6 +151,22 @@ public class MonitorPointListActivity extends BaseActivity implements MqttServic
         mAdapter.notifyDataSetChanged();
     }
 
+    @Override
+    protected void onServiceBound() {
+        super.onServiceBound();
+        connectIotService();
+    }
+
+    @Override
+    protected void onServiceUnbound() {
+        super.onServiceUnbound();
+        disconnectIotService();
+    }
+
+    @Override
+    public void serviceConnected() {
+        requestMonitorPointList();
+    }
 
     @Override
     public void monitorPointListUpdate(MonitorPointList list) {
@@ -218,12 +216,8 @@ public class MonitorPointListActivity extends BaseActivity implements MqttServic
 
     @Override
     public void refresh() {
-        /*
         isRefreshing = true;
-
-        if(mBinder != null){
-            mBinder.requestMpList();
-        }
+        requestMonitorPointList();
 
         new Handler().postDelayed(new Runnable() {
             @Override
@@ -234,21 +228,12 @@ public class MonitorPointListActivity extends BaseActivity implements MqttServic
                 }
             }
         }, 4000);
-       */
 
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                setupAlarmNotification(monitorPointMap.get(mDataList.get(0)));
-                pullToRefreshLayout.finishRefresh();
-            }
-        }, 500);
     }
 
     @Override
     public void loadMore() {
         new Handler().postDelayed(new Runnable() {
-
 
             @Override
             public void run() {
@@ -260,7 +245,7 @@ public class MonitorPointListActivity extends BaseActivity implements MqttServic
 
     private void setupAlarmNotification(MonitorPoint mp){
 
-        Bitmap bitmap = BitmapFactory.decodeResource(getResources(),R.mipmap.ic_mp_alarm);
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(),R.mipmap.ic_launcher_round);
 
         Bundle bundle = new Bundle();
         bundle.putSerializable("mp", mp);
@@ -276,17 +261,31 @@ public class MonitorPointListActivity extends BaseActivity implements MqttServic
                 .setLargeIcon(bitmap)
                 .setContentIntent(pendingIntent)
                 .setAutoCancel(true)
-                /*
-                .setStyle(
-                        new NotificationCompat.InboxStyle()
-                                .addLine(mp.getDeviceId() + "报警")
-                .setBigContentTitle("设备报警"))
-                */
                 .setContentTitle("设备报警")
+                .setContentText(mp.getDeviceId() + "报警")
                 .setDefaults(Notification.DEFAULT_SOUND)
                 .build();
 
         notificationManager.notify(0, notification);
 
     }
+
+    @Override
+    public void onBackPressed() {
+        if(!isBackKeyPressed){
+            Toast.makeText(this, "再按一次退出应用", Toast.LENGTH_SHORT).show();
+            isBackKeyPressed = true;
+
+            new Timer().schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    isBackKeyPressed = false;
+                }
+            }, 2000);
+        }else{
+            this.finish();
+            System.exit(0);
+        }
+    }
+
 }

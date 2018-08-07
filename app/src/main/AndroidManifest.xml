@@ -27,6 +27,7 @@
             android:name=".ui.BaseActivity"
             android:label="@string/title_activity_base"
             android:theme="@style/AppTheme.NoActionBar" />
+
         <activity android:name=".ui.MonitorPointListActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

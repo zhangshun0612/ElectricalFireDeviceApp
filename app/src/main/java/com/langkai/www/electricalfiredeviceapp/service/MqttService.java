@@ -84,16 +84,6 @@ public class MqttService extends Service {
 
         public void connectIoTService(){
 
-            /*
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-
-
-            }).start();
-            */
-
-
             MqttConnectOptions connOpt = new MqttConnectOptions();
             connOpt.setUserName(userName);
             connOpt.setPassword(password.toCharArray());
@@ -123,6 +113,14 @@ public class MqttService extends Service {
                 }
             }
 
+        }
+
+        public boolean isConnectedIoTService(){
+            if(mqttClient == null){
+                return false;
+            }
+
+            return mqttClient.isConnected();
         }
 
         public void setMqttServiceCallback(MqttServiceCallback callback){
@@ -183,6 +181,12 @@ public class MqttService extends Service {
             } catch (MqttException e) {
                 Toast.makeText(MqttService.this, "订阅Iot主题失败", Toast.LENGTH_SHORT).show();
                 e.printStackTrace();
+            }
+
+            if(!mCallbacks.isEmpty()){
+                for(int i = 0 ; i < mCallbacks.size(); i++){
+                    mCallbacks.get(i).serviceConnected();
+                }
             }
 
         }
