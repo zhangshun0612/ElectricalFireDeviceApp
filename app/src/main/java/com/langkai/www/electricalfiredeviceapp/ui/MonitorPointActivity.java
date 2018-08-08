@@ -38,7 +38,6 @@ public class MonitorPointActivity extends MqttServiceActivity implements View.On
         Bundle bundle = getIntent().getBundleExtra("data");
         monitorPoint = (MonitorPoint) bundle.getSerializable("mp");
 
-
         dataShowFragment = new DataShowFragment();
         settingConfigFragment = new SettingConfigFragment();
         dataRecordFragment = new DataRecordFragment();

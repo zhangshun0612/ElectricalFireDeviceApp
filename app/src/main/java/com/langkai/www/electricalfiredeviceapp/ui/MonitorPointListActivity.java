@@ -3,6 +3,7 @@ package com.langkai.www.electricalfiredeviceapp.ui;
 
 import android.app.ActivityManager;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ComponentName;
@@ -11,14 +12,22 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.KeyEvent;
+import android.view.View;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.jwenfeng.library.pulltorefresh.BaseRefreshListener;
@@ -42,9 +51,10 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 
-public class MonitorPointListActivity extends MqttServiceActivity implements BaseRefreshListener {
+public class MonitorPointListActivity extends MqttServiceActivity implements BaseRefreshListener, View.OnClickListener {
 
     private String TAG = MonitorPointListActivity.class.getSimpleName();
+    private final String channelId = "alarm_notify";
 
     private Map<String, MonitorPoint> monitorPointMap;
     private List<String> mDataList;
@@ -55,9 +65,14 @@ public class MonitorPointListActivity extends MqttServiceActivity implements Bas
 
     private MonitorPointAdapter mAdapter = null;
 
+    private DrawerLayout drawerLayout;
+    private LinearLayout mainLeftDrawerLayout;
+
     private RecyclerView recyclerView;
     private PullToRefreshLayout pullToRefreshLayout;
     private LinearLayoutManager manager;
+
+    private Button appSettingButton;
 
     NotificationManager notificationManager = null;
 
@@ -85,6 +100,13 @@ public class MonitorPointListActivity extends MqttServiceActivity implements Bas
 
         notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
+        drawerLayout = findViewById(R.id.main_drawer_layout);
+        drawerLayout.setScrimColor(Color.TRANSPARENT);
+        mainLeftDrawerLayout = findViewById(R.id.main_left_drawer_layout);
+
+        appSettingButton = findViewById(R.id.app_setting_button);
+        appSettingButton.setOnClickListener(this);
+
         //initData();
     }
 
@@ -107,7 +129,13 @@ public class MonitorPointListActivity extends MqttServiceActivity implements Bas
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        notificationManager.cancelAll();
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            notificationManager.cancelAll();
+            notificationManager.deleteNotificationChannel(channelId);
+        }else{
+            notificationManager.cancelAll();
+        }
+
     }
 
 
@@ -256,15 +284,33 @@ public class MonitorPointListActivity extends MqttServiceActivity implements Bas
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
                 intent, PendingIntent.FLAG_CANCEL_CURRENT);
 
-        Notification notification = new NotificationCompat.Builder(this, "alarm")
-                .setSmallIcon(R.mipmap.ic_mp_alarm)
-                .setLargeIcon(bitmap)
-                .setContentIntent(pendingIntent)
-                .setAutoCancel(true)
-                .setContentTitle("设备报警")
-                .setContentText(mp.getDeviceId() + "报警")
-                .setDefaults(Notification.DEFAULT_SOUND)
-                .build();
+
+        Notification notification;
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            NotificationChannel mChannel = new NotificationChannel(channelId, "alarm", NotificationManager.IMPORTANCE_DEFAULT);
+            notificationManager.createNotificationChannel(mChannel);
+
+            notification = new NotificationCompat.Builder(this, channelId)
+                    .setChannelId(channelId)
+                    .setSmallIcon(R.mipmap.ic_mp_alarm)
+                    .setLargeIcon(bitmap)
+                    .setContentIntent(pendingIntent)
+                    .setAutoCancel(true)
+                    .setContentTitle("设备报警")
+                    .setContentText(mp.getDeviceId() + "报警")
+                    .setDefaults(Notification.DEFAULT_SOUND)
+                    .build();
+        }else{
+            notification = new NotificationCompat.Builder(this, channelId)
+                    .setSmallIcon(R.mipmap.ic_mp_alarm)
+                    .setLargeIcon(bitmap)
+                    .setContentIntent(pendingIntent)
+                    .setAutoCancel(true)
+                    .setContentTitle("设备报警")
+                    .setContentText(mp.getDeviceId() + "报警")
+                    .setDefaults(Notification.DEFAULT_SOUND)
+                    .build();
+        }
 
         notificationManager.notify(0, notification);
 
@@ -284,8 +330,12 @@ public class MonitorPointListActivity extends MqttServiceActivity implements Bas
             }, 2000);
         }else{
             this.finish();
-            System.exit(0);
+            //System.exit(0);
         }
     }
 
+    @Override
+    public void onClick(View view) {
+        Log.d(TAG, "Setting");
+    }
 }

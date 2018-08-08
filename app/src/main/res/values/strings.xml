@@ -6,6 +6,8 @@
     <string name="login_button_text">登录</string>
     <string name="status_created">创建</string>
 
+    <string name="app_setting">设置</string>
+
     <string name="status_ok">正常</string>
     <string name="status_alarm">报警</string>
     <string name="status_fault">故障</string>
