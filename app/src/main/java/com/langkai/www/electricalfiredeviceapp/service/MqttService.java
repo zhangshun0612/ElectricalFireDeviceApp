@@ -133,38 +133,30 @@ public class MqttService extends Service {
 
         public void requestMpList(){
 
-            if(mqttClient == null && !mqttClient.isConnected()){
-                //后续加上提醒
-                return;
-            }
+            sendMessage(requestMpListCmd, requestMpListTopic, 1);
 
-            MqttMessage message = new MqttMessage();
-            message.setQos(1);
-            message.setPayload(requestMpListCmd.getBytes());
-
-            try {
-                mqttClient.publish(requestMpListTopic, message);
-
-            } catch (MqttException e) {
-                e.printStackTrace();
-            }
         }
 
         public void requestMpData(String deviceId){
-            if(mqttClient == null && !mqttClient.isConnected()){
-                //后续加上提醒
+
+
+            String messageStr = requestMpDataCmd + " " + deviceId;
+            sendMessage(messageStr, requestMpDataTopic, 1);
+
+        }
+
+        private void sendMessage(String msg, String topic, int qos){
+            if(mqttClient == null || !mqttClient.isConnected()){
+
                 return;
             }
 
-            String messageStr = requestMpDataCmd + " " + deviceId;
-
             MqttMessage message = new MqttMessage();
-            message.setQos(1);
-            message.setPayload(messageStr.getBytes());
+            message.setQos(qos);
+            message.setPayload(msg.getBytes());
 
             try {
-                mqttClient.publish(requestMpDataTopic, message);
-
+                mqttClient.publish(topic, message);
             } catch (MqttException e) {
                 e.printStackTrace();
             }
@@ -201,8 +193,12 @@ public class MqttService extends Service {
     private MqttCallback mqttCallback = new MqttCallback() {
         @Override
         public void connectionLost(Throwable cause) {
-
             Toast.makeText(MqttService.this, "服务连接已断开", Toast.LENGTH_SHORT).show();
+            if(!mCallbacks.isEmpty()){
+                for(int i = 0 ; i < mCallbacks.size(); i++){
+                    mCallbacks.get(i).serviceConnectionLost();
+                }
+            }
         }
 
         @Override

@@ -30,4 +30,8 @@ public class Constant {
     public static final int ALARM_PHASE_MISSING = 0x02;
     public static final int ALARM_PHASE_FAULT = 0x03;
 
+
+    //提示类型
+    public static final int ALARM_NOTIFICATION = 0x01;
+    public static final int FAULT_NOTIFICATION = 0x02;
 }

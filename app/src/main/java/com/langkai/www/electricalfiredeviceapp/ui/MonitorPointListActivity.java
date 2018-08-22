@@ -1,21 +1,17 @@
 package com.langkai.www.electricalfiredeviceapp.ui;
 
 
-import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -23,22 +19,18 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.jwenfeng.library.pulltorefresh.BaseRefreshListener;
 import com.jwenfeng.library.pulltorefresh.PullToRefreshLayout;
 import com.langkai.www.electricalfiredeviceapp.bean.MonitorPointChannel;
-import com.langkai.www.electricalfiredeviceapp.service.MqttService;
 import com.langkai.www.electricalfiredeviceapp.R;
 import com.langkai.www.electricalfiredeviceapp.adapter.MonitorPointAdapter;
 import com.langkai.www.electricalfiredeviceapp.bean.MonitorPoint;
 import com.langkai.www.electricalfiredeviceapp.bean.MonitorPointList;
-import com.langkai.www.electricalfiredeviceapp.service.MqttServiceCallback;
 import com.langkai.www.electricalfiredeviceapp.utils.Constant;
 
 
@@ -54,7 +46,10 @@ import java.util.TimerTask;
 public class MonitorPointListActivity extends MqttServiceActivity implements BaseRefreshListener, View.OnClickListener {
 
     private String TAG = MonitorPointListActivity.class.getSimpleName();
-    private final String channelId = "alarm_notify";
+
+    private final String alarmChannelId = "alarm_notify";
+    private final String faultChannelId = "fault_notify";
+
 
     private Map<String, MonitorPoint> monitorPointMap;
     private List<String> mDataList;
@@ -131,7 +126,7 @@ public class MonitorPointListActivity extends MqttServiceActivity implements Bas
         super.onDestroy();
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
             notificationManager.cancelAll();
-            notificationManager.deleteNotificationChannel(channelId);
+            notificationManager.deleteNotificationChannel(alarmChannelId);
         }else{
             notificationManager.cancelAll();
         }
@@ -193,8 +188,17 @@ public class MonitorPointListActivity extends MqttServiceActivity implements Bas
 
     @Override
     public void serviceConnected() {
-        requestMonitorPointList();
+        super.serviceConnected();
+
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                requestMonitorPointList();
+            }
+        }, 1000);
+
     }
+
 
     @Override
     public void monitorPointListUpdate(MonitorPointList list) {
@@ -225,11 +229,15 @@ public class MonitorPointListActivity extends MqttServiceActivity implements Bas
             return;
 
         MonitorPoint preMp = monitorPointMap.get(id);
-        if(preMp.getMonitorPointStatus() == Constant.STATUS_OK
+        if(preMp.getMonitorPointStatus() != Constant.STATUS_ALARM
                 && mp.getMonitorPointStatus() == Constant.STATUS_ALARM)
         {
             //报警提示
-            setupAlarmNotification(mp);
+            setupNotification(mp, Constant.ALARM_NOTIFICATION);
+        }else if(preMp.getMonitorPointStatus() == Constant.STATUS_OK
+                &&(mp.getMonitorPointStatus() == Constant.STATUS_DISCONNECTED || mp.getMonitorPointStatus() == Constant.STATUS_FAULT))
+        {
+            setupNotification(mp, Constant.FAULT_NOTIFICATION);
         }
 
         monitorPointMap.remove(id);
@@ -271,8 +279,8 @@ public class MonitorPointListActivity extends MqttServiceActivity implements Bas
 
     }
 
-    private void setupAlarmNotification(MonitorPoint mp){
-
+    private void setupNotification(MonitorPoint mp, int notificationType)
+    {
         Bitmap bitmap = BitmapFactory.decodeResource(getResources(),R.mipmap.ic_launcher_round);
 
         Bundle bundle = new Bundle();
@@ -284,6 +292,24 @@ public class MonitorPointListActivity extends MqttServiceActivity implements Bas
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
                 intent, PendingIntent.FLAG_CANCEL_CURRENT);
 
+        String channelId = "Unknown";
+        int smallIcon = R.mipmap.ic_mp_ok;
+        String title = "设备正常";
+        String text = "正常";
+        switch (notificationType){
+            case Constant.ALARM_NOTIFICATION:
+                channelId = alarmChannelId;
+                smallIcon = R.mipmap.ic_mp_alarm;
+                title = "设备报警";
+                text = "报警";
+                break;
+            case Constant.FAULT_NOTIFICATION:
+                channelId = faultChannelId;
+                smallIcon = R.mipmap.ic_mp_fault;
+                title = "设备故障";
+                text = "故障";
+                break;
+        }
 
         Notification notification;
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
@@ -292,29 +318,32 @@ public class MonitorPointListActivity extends MqttServiceActivity implements Bas
 
             notification = new NotificationCompat.Builder(this, channelId)
                     .setChannelId(channelId)
-                    .setSmallIcon(R.mipmap.ic_mp_alarm)
+                    .setSmallIcon(smallIcon)
                     .setLargeIcon(bitmap)
                     .setContentIntent(pendingIntent)
                     .setAutoCancel(true)
-                    .setContentTitle("设备报警")
-                    .setContentText(mp.getDeviceId() + "报警")
+                    .setContentTitle(title)
+                    .setContentText(mp.getDeviceId() + text)
                     .setDefaults(Notification.DEFAULT_SOUND)
                     .build();
         }else{
             notification = new NotificationCompat.Builder(this, channelId)
-                    .setSmallIcon(R.mipmap.ic_mp_alarm)
+                    .setSmallIcon(smallIcon)
                     .setLargeIcon(bitmap)
                     .setContentIntent(pendingIntent)
                     .setAutoCancel(true)
-                    .setContentTitle("设备报警")
-                    .setContentText(mp.getDeviceId() + "报警")
+                    .setContentTitle(title)
+                    .setContentText(mp.getDeviceId() + text)
                     .setDefaults(Notification.DEFAULT_SOUND)
                     .build();
         }
 
-        notificationManager.notify(0, notification);
+        notificationManager.notify(notificationType, notification);
+
 
     }
+
+
 
     @Override
     public void onBackPressed() {

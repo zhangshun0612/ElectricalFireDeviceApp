@@ -22,6 +22,10 @@ repositories {
     maven {
         url "https://repo.eclipse.org/content/repositories/paho-releases/"
     }
+
+    maven {
+        url "https://jitpack.io"
+    }
 }
 
 dependencies {
@@ -41,4 +45,6 @@ dependencies {
     implementation 'com.jwenfeng.pulltorefresh:library:1.2.7'
 
     implementation 'com.daimajia.swipelayout:library:1.2.0@aar'
+
+    implementation 'com.github.ForgetAll:LoadingDialog:v1.0.4'
 }
