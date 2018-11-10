@@ -66,6 +66,9 @@ public class MqttService extends Service {
             }
         }
         */
+        if(mqttClient == null)
+            return;
+
         mqttClient.unregisterResources();
         mqttClient.close();
     }
@@ -104,6 +107,8 @@ public class MqttService extends Service {
 
 
         public void disconnectIoTService(){
+            if(mqttClient == null)
+                return;
 
             if(mqttClient.isConnected()){
                 try {

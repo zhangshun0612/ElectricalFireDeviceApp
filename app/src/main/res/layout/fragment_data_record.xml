@@ -5,10 +5,55 @@
     android:layout_height="match_parent"
     tools:context=".ui.fragment.DataRecordFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="Data Record" />
+        android:layout_height="match_parent">
+
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/data_chart"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@id/query_layout"/>
+
+        <LinearLayout
+            android:id="@+id/query_layout"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:orientation="horizontal"
+            android:layout_alignParentBottom="true"
+            android:paddingBottom="4dp">
+
+            <ImageButton
+                android:id="@+id/channel_choose_button"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="3"
+                android:scaleType="centerInside"
+                android:src="@mipmap/ic_channel_choose"
+                android:background="#00000000"/>
+
+            <Spinner
+                android:id="@+id/channel_number_spinner"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="6">
+            </Spinner>
+
+
+            <ImageButton
+                android:id="@+id/query_button"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:scaleType="centerInside"
+                android:src="@mipmap/ic_record_query"
+                android:background="#00000000"/>
+
+
+        </LinearLayout>
+
+    </RelativeLayout>
+
+
 
 </FrameLayout>

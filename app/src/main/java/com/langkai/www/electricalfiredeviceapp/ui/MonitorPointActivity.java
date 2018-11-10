@@ -43,6 +43,7 @@ public class MonitorPointActivity extends MqttServiceActivity implements View.On
         dataRecordFragment = new DataRecordFragment();
 
         dataShowFragment.setMonitorPoint(monitorPoint);
+        dataRecordFragment.setMonitorPoint(monitorPoint);
 
         fragmentManager = getFragmentManager();
         fragmentTransaction = fragmentManager.beginTransaction();

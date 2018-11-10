@@ -102,7 +102,7 @@ public class MonitorPointListActivity extends MqttServiceActivity implements Bas
         appSettingButton = findViewById(R.id.app_setting_button);
         appSettingButton.setOnClickListener(this);
 
-        //initData();
+        initData();
     }
 
     @Override
@@ -145,22 +145,29 @@ public class MonitorPointListActivity extends MqttServiceActivity implements Bas
             ch1.setValue(30.22);
             mp.addMonitorPointChannel(1, ch1);
 
-            MonitorPointChannel ch2 = new MonitorPointChannel(1, Constant.FUNCTION_TEMPERATURE);
+            MonitorPointChannel ch2 = new MonitorPointChannel(2, Constant.FUNCTION_TEMPERATURE);
             ch2.setChannelStatus(Constant.STATUS_FAULT);
             ch2.setChannelFaultType(Constant.FAULT_BREAK);
             mp.addMonitorPointChannel(2, ch2);
 
 
-            MonitorPointChannel ch3 = new MonitorPointChannel(1, Constant.FUNCTION_RUNNING_CURRENT);
+            MonitorPointChannel ch3 = new MonitorPointChannel(3, Constant.FUNCTION_RUNNING_CURRENT);
             ch3.setChannelStatus(Constant.STATUS_ALARM);
             ch3.setChannelAlarmType(Constant.ALARM_UPPER_LIMIT);
             ch3.setValue(20);
             mp.addMonitorPointChannel(3, ch3);
 
 
-            MonitorPointChannel ch4 = new MonitorPointChannel(1, Constant.FUNCTION_RUNNING_VOLT);
+            MonitorPointChannel ch4 = new MonitorPointChannel(4, Constant.FUNCTION_RUNNING_VOLT);
             ch4.setChannelStatus(Constant.STATUS_DISCONNECTED);
             mp.addMonitorPointChannel(4, ch4);
+
+            for(int chno = 5; chno <= 12; chno++){
+                MonitorPointChannel ch = new MonitorPointChannel(chno, Constant.FUNCTION_RESIDUAL_CURRENT);
+                ch1.setChannelStatus(Constant.STATUS_OK);
+                ch1.setValue(30.22);
+                mp.addMonitorPointChannel(chno, ch);
+            }
 
 
             /*
@@ -177,7 +184,7 @@ public class MonitorPointListActivity extends MqttServiceActivity implements Bas
     @Override
     protected void onServiceBound() {
         super.onServiceBound();
-        connectIotService();
+        //connectIotService();
     }
 
     @Override

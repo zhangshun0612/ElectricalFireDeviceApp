@@ -8,11 +8,13 @@
 
     <FrameLayout
         android:id="@+id/frame_layout"
+        android:layout_above="@id/bottom_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
 
     <LinearLayout
+        android:id="@+id/bottom_layout"
         android:paddingBottom="4dp"
         android:layout_alignParentBottom="true"
         android:layout_width="match_parent"
@@ -35,20 +37,6 @@
 
         </RelativeLayout>
 
-        <RelativeLayout
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="match_parent">
-
-            <ImageButton
-                android:id="@+id/setting_config_button"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="centerInside"
-                android:src="@mipmap/ic_fragment_setting_config_notchosen"
-                android:background="#00000000"/>
-
-        </RelativeLayout>
 
         <RelativeLayout
             android:layout_weight="1"
@@ -64,6 +52,23 @@
                 android:background="#00000000"/>
 
         </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent">
+
+            <ImageButton
+                android:id="@+id/setting_config_button"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerInside"
+                android:src="@mipmap/ic_fragment_setting_config_notchosen"
+                android:background="#00000000"/>
+
+        </RelativeLayout>
+
+
 
     </LinearLayout>
 
